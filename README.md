@@ -7,11 +7,12 @@ When some one talk with you with some keywords you pre-defined with Auto Reply b
 
 ## Screenshots
 
-todo
+![ ](imgs/ss2.png)
+![ ](imgs/ss3.png)
 
 ## Videos
 
-todo
+[https://youtu.be/ibs_Fb5OUrk](https://youtu.be/ibs_Fb5OUrk)
 
 ## DEV Prerequisites
 
