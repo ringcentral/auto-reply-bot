@@ -62,7 +62,7 @@ export const icons = {
   feedback: baseURL('feedback')
 }
 
-export const cmdUrl = 'https://github.com/ringcentral/auto-reply-bot/blob/master/command.md'
+export const cmdUrl = 'https://github.com/ringcentral/auto-reply-bot/blob/main/doc/command.md'
 
 export const tokenExpireTime = 25 * 60 * 1000
 export const testMessageSignature = ' [__test__]'
