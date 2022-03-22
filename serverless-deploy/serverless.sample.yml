@@ -37,3 +37,10 @@ functions:
           method: any
           path: /{proxy+}
           cors: true
+  maintain:
+    description: auto-reply-bot-add-in
+    handler: lambda.maintain
+    timeout: 900 # 15 miutes
+    handler: lambda.maintain
+    events:
+      - schedule: rate(3 days)
