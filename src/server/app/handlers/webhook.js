@@ -5,6 +5,9 @@ import { autoReply } from './reply-handler'
 
 export default async (req, res) => {
   const message = req.body
+  if (process.env.DEBUG_ON) {
+    console.log('get rc webhook', JSON.stringify(message, null, 2))
+  }
   // console.log('rc webhook', message)
   const isRenewEvent = _.get(message, 'event') === subscribeInterval()
   const userId = (_.get(message, 'body.extensionId') || _.get(message, 'ownerId') || '').toString()
