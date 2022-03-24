@@ -397,9 +397,12 @@ export default class View extends Component {
   parseUserUpdate = (update) => {
     const keys = Object.keys(update)
     return keys.reduce((p, k) => {
+      const v = ['on', 'shouldUseSignature'].includes(k)
+        ? update[k] ? 1 : 0
+        : update[k]
       return {
         ...p,
-        [k]: update[k] ? 1 : 0
+        [k]: v
       }
     }, {})
   }
