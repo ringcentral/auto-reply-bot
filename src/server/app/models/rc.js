@@ -6,6 +6,7 @@ import Bot from 'ringcentral-chatbot-core/dist/models/Bot'
 import {
   sendPrivateMsg
 } from '../common/send-msg'
+import delay from 'timeout-as-promise'
 import buildOffMessage from '../common/build-turn-off-warn'
 
 export const subscribeInterval = () => '/restapi/v1.0/subscription/~?threshold=120&interval=35'
@@ -93,7 +94,20 @@ User.prototype.ensureWebHook = async function (removeOnly = false) {
     }
   }
   if (!removeOnly) {
-    return this.setupWebHook()
+    return this.trySetupWebHook()
+  }
+}
+
+User.prototype.trySetupWebHook = async function () {
+  let count = 0
+  let done = false
+  while (count < 5 && !done) {
+    done = await this.setupWebHook()
+    count = count + 1
+    await delay(10000)
+  }
+  if (!done) {
+    await this.turnOff()
   }
 }
 
@@ -114,8 +128,7 @@ User.prototype.setupWebHook = async function () {
   })
     .then(() => true)
     .catch(async e => {
-      console.log('setupWebHook', e)
-      await this.turnOff()
+      console.log('setupWebHook error', e)
     })
 }
 
