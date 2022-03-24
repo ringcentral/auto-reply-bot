@@ -170,7 +170,7 @@ User.prototype.refresh = async function () {
     Object.assign(this, up)
     return true
   } catch (e) {
-    console.log('User refresh token', e)
+    console.log('User refresh token error', e)
     await this.turnOff()
     console.log(`User ${this.id} refresh token has expired`)
     return false
