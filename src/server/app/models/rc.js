@@ -1,6 +1,12 @@
 import Sequelize from 'sequelize'
 import sequelize from './sequelize'
 import { createRc, tokenExpireTime } from '../common/constants'
+import { Record } from './record'
+import Bot from 'ringcentral-chatbot-core/dist/models/Bot'
+import {
+  sendPrivateMsg
+} from '../common/send-msg'
+import buildOffMessage from '../common/build-turn-off-warn'
 
 export const subscribeInterval = () => '/restapi/v1.0/subscription/~?threshold=120&interval=35'
 
@@ -159,17 +165,35 @@ User.prototype.refresh = async function () {
 }
 
 User.prototype.turnOff = async function (groupId) {
+  const up = {
+    on: 0,
+    turnOffDesc: 'fail'
+  }
   await User.update(
-    {
-      on: 0,
-      turnOffDesc: 'fail'
-    },
+    up,
     {
       where: {
         id: this.id
       }
     }
   )
+  Object.assign(this, up)
+  const {
+    recIds
+  } = this
+  if (recIds && recIds[0]) {
+    const id = recIds[0]
+    const rec = await Record.findByPk(id)
+    if (!rec) {
+      return false
+    }
+    const { botId } = rec
+    const bot = await Bot.findByPk(botId)
+    if (bot) {
+      const msg = await buildOffMessage(this, bot)
+      await sendPrivateMsg(bot, this.id, msg)
+    }
+  }
 }
 
 User.prototype.getGroup = async function (groupId) {

@@ -86,7 +86,7 @@ function buildWelcomeMessage (bot, group) {
 
 async function parseCommand (text = '', userId) {
   const user = await RcUser.findByPk(userId)
-  if (!user || !user.on) {
+  if (!user) {
     return {
       error: 'auth'
     }
@@ -94,6 +94,7 @@ async function parseCommand (text = '', userId) {
 
   if (singleCmds.includes(text)) {
     return {
+      user,
       cmd: text
     }
   }
@@ -101,11 +102,13 @@ async function parseCommand (text = '', userId) {
   const cmd = arr[0]
   if (cmd === 'test' && arr[1]) {
     return {
+      user,
       cmd: 'test',
       text: arr.splice(1).join(' ')
     }
   } else if (rmCommands.includes(cmd) && arr.length === 2 && arr[1]) {
     return {
+      user,
       cmd: 'rm',
       id: arr[1]
     }
@@ -126,6 +129,7 @@ async function parseCommand (text = '', userId) {
     return false
   }
   return {
+    user,
     cmd,
     keywords,
     reply
@@ -172,7 +176,8 @@ export async function handleMessage (
     return false
   }
   if (conf.keywords) {
-    await createFromCmd(conf, bot, group, userId)
+    const { user, ...rest } = conf
+    await createFromCmd(rest, bot, group, user)
   } else {
     await handleCmd(conf, bot, group, userId)
   }

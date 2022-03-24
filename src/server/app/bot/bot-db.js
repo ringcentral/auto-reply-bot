@@ -19,6 +19,7 @@ import {
   buildLoginUrlRedirect,
   buildAuthUrl
 } from '../common/constants'
+import buildOffMessage from '../common/build-turn-off-warn'
 
 const MAX_RECS = 50
 const propsCanUpdate = [
@@ -128,18 +129,19 @@ export async function createFromCmd (
   data,
   bot,
   group,
-  userId
+  user
 ) {
+  const userId = user.id
   data.id = uid()
   data.userId = userId
   data.botId = bot.id
   const rcId = userId
-  const rc = await getRcUser(rcId)
+  const rc = user
   if (!rc.recIds) {
     rc.recIds = []
   }
   if (rc.recIds.length >= MAX_RECS) {
-    return await sendMsg(
+    return sendMsg(
       bot, group, userId,
       `Can only have ${MAX_RECS} replies`
     )
@@ -157,9 +159,10 @@ export async function createFromCmd (
   await RcUser.update({
     recIds
   }, q)
+  const warn = await buildOffMessage(user, bot)
   await sendMsg(
     bot, group, userId,
-    'Keywords and reply created!',
+    'Keywords and reply created!' + warn,
     false
   )
 }
@@ -240,8 +243,8 @@ const moreCmdStr = (botId) => `
 More bot command detail and examples please check [command list](${cmdUrl}), you can also create/manage keywords from [webpage](${buildAuthUrl({ id: botId })})
 `
 
-function cmdHelp (bot, group, userId) {
-  return sendMsg(
+function cmdHelp (conf, bot, group, userId) {
+  sendMsg(
     bot, group, userId,
     `* add keywords='some-keyword' some reply: create new keywords and reply
 * list: list keywords and replies
@@ -257,8 +260,8 @@ ${moreCmdStr(bot.id)}
   )
 }
 
-async function cmdList (bot, group, userId) {
-  const user = await RcUser.findByPk(userId)
+async function cmdList (conf, bot, group, userId) {
+  const { user } = conf
   if (!user) {
     return false
   }
@@ -279,14 +282,25 @@ async function cmdList (bot, group, userId) {
           `${k.id} | ${k.keywords} | ${k.reply} | ${k.count}`
       }, '** Id | Keywords | Reply | Trigger count**')
     : 'No keywords yet.'
-  msg = msg + moreCmdStr(bot.id)
+  const warn = await buildOffMessage(user, bot)
+  msg = msg + '\n\n' + warn + moreCmdStr(bot.id).replace('\n\n', '\n')
   return sendMsg(
     bot, group, userId,
     msg, false
   )
 }
 
-function test (conf, bot, group, userId) {
+async function test (conf, bot, group, userId) {
+  const warn = await buildOffMessage(conf.user, bot)
+  if (warn) {
+    return sendMsg(
+      bot,
+      group,
+      userId,
+      warn,
+      false
+    )
+  }
   const msg = `${conf.text}${testMessageSignature}`
   return sendMsg(
     bot,
@@ -303,7 +317,7 @@ export async function handleCmd (conf, bot, group, userId) {
   } = conf
   switch (cmd) {
     case 'list':
-      await cmdList(bot, group, userId)
+      await cmdList(conf, bot, group, userId)
       break
     case 'rm':
       await cmdRm(conf.id, bot, group, userId)
@@ -315,7 +329,8 @@ export async function handleCmd (conf, bot, group, userId) {
       break
     case 'off':
       await changeProp(bot, group, userId, {
-        on: 0
+        on: 0,
+        turnOffDesc: 'self'
       }, 'Auto reply disabled')
       break
     case 'signatureOn':
@@ -329,7 +344,7 @@ export async function handleCmd (conf, bot, group, userId) {
       }, 'Auto reply signature disabled')
       break
     case 'help':
-      await cmdHelp(bot, group, userId)
+      await cmdHelp(conf, bot, group, userId)
       break
     case 'test':
       await test(conf, bot, group, userId)
