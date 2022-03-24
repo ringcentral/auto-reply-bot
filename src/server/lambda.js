@@ -11,7 +11,7 @@ export const app = serverlessHTTP(app1)
 export const maintain = async () => {
   console.log('send renew request')
   return axios.put(
-    `${process.env.RINGCENTRAL_APP_SERVER}/admin/renew`,
+    `${process.env.RINGCENTRAL_CHATBOT_SERVER}/admin/renew`,
     undefined,
     {
       auth: {
