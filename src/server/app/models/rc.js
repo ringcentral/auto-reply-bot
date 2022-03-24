@@ -104,7 +104,7 @@ User.prototype.trySetupWebHook = async function () {
   while (count < 5 && !done) {
     done = await this.setupWebHook()
     count = count + 1
-    await delay(10000)
+    await delay(1)
   }
   if (!done) {
     await this.turnOff()
