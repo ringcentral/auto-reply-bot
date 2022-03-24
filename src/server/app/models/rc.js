@@ -1,6 +1,5 @@
 import Sequelize from 'sequelize'
 import sequelize from './sequelize'
-import delay from 'timeout-as-promise'
 import { createRc, tokenExpireTime } from '../common/constants'
 
 export const subscribeInterval = () => '/restapi/v1.0/subscription/~?threshold=120&interval=35'
@@ -31,6 +30,9 @@ const User = sequelize.define('RcUser', {
   on: {
     type: Sequelize.INTEGER,
     defaultValue: 1
+  },
+  turnOffDesc: {
+    type: Sequelize.STRING
   },
   replyWithoutMentionInTeam: {
     type: Sequelize.INTEGER,
@@ -67,20 +69,23 @@ User.prototype.removeWebHook = async function () {
 }
 
 User.prototype.ensureWebHook = async function (removeOnly = false) {
-  try {
-    await this.tryRefresh()
-    const rc = await this.rc()
-    const r = await rc.get('/restapi/v1.0/subscription')
-      .then(d => d.data)
+  await this.tryRefresh()
+  const rc = await this.rc()
+  const r = await rc.get('/restapi/v1.0/subscription')
+    .then(d => d.data)
+    .catch(e => {
+      console.log(e, 'list WebHook error')
+    })
+  if (r && r.records) {
     for (const sub of r.records) {
       if (sub.deliveryMode.address === process.env.RINGCENTRAL_CHATBOT_SERVER + '/rc/webhook') {
         await rc.delete(`/restapi/v1.0/subscription/${sub.id}`)
+          .catch(e => {
+            console.log(e, 'del WebHook error, id:', sub.id)
+          })
       }
     }
-  } catch (e) {
-    console.log(e, 'ensureWebHook error')
   }
-
   if (!removeOnly) {
     return this.setupWebHook()
   }
@@ -88,46 +93,35 @@ User.prototype.ensureWebHook = async function (removeOnly = false) {
 
 User.prototype.setupWebHook = async function () {
   await this.tryRefresh()
-  let done = false
-  while (!done) {
-    try {
-      const rc = await this.rc()
-      await rc.post('/restapi/v1.0/subscription', {
-        eventFilters: [
-          '/restapi/v1.0/glip/posts',
-          '/restapi/v1.0/glip/groups',
-          subscribeInterval()
-        ],
-        expiresIn: 1799,
-        deliveryMode: {
-          transportType: 'WebHook',
-          address: process.env.RINGCENTRAL_CHATBOT_SERVER + '/rc/webhook'
-        }
-      })
-      done = true
-      return done
-    } catch (e) {
-      console.log('error', e)
-      const { message } = e
-      if (message.includes('SUB-406') || message.includes('SUB-521')) {
-        await delay(10000)
-        continue
-      }
-      throw e
+  const rc = await this.rc()
+  await rc.post('/restapi/v1.0/subscription', {
+    eventFilters: [
+      '/restapi/v1.0/glip/posts',
+      '/restapi/v1.0/glip/groups',
+      subscribeInterval()
+    ],
+    expiresIn: 1799,
+    deliveryMode: {
+      transportType: 'WebHook',
+      address: process.env.RINGCENTRAL_CHATBOT_SERVER + '/rc/webhook'
     }
-  }
+  })
+    .then(() => true)
+    .catch(async e => {
+      console.log('setupWebHook', e)
+      await this.turnOff()
+    })
 }
 
 User.prototype.getSubscriptions = async function () {
-  try {
-    await this.tryRefresh()
-    const rc = await this.rc()
-    return rc.get('/restapi/v1.0/subscription')
-      .then(d => d.data.records)
-  } catch (e) {
-    console.log('getSubscriptions error', e)
-    return []
-  }
+  await this.tryRefresh()
+  const rc = await this.rc()
+  return rc.get('/restapi/v1.0/subscription')
+    .then(d => d.data.records)
+    .catch(e => {
+      console.log('getSubscriptions error', e)
+      return []
+    })
 }
 
 User.prototype.tryRefresh = async function () {
@@ -158,19 +152,24 @@ User.prototype.refresh = async function () {
     return true
   } catch (e) {
     console.log('User refresh token', e)
-    await User.update(
-      {
-        on: 0
-      },
-      {
-        where: {
-          id: this.id
-        }
-      }
-    )
+    await this.turnOff()
     console.log(`User ${this.id} refresh token has expired`)
     return false
   }
+}
+
+User.prototype.turnOff = async function (groupId) {
+  await User.update(
+    {
+      on: 0,
+      turnOffDesc: 'fail'
+    },
+    {
+      where: {
+        id: this.id
+      }
+    }
+  )
 }
 
 User.prototype.getGroup = async function (groupId) {

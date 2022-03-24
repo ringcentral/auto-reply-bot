@@ -4,7 +4,8 @@ import {
   Tabs,
   Button,
   Typography,
-  Spin
+  Spin,
+  notification
 } from 'antd'
 import {
   getUser,
@@ -68,7 +69,37 @@ export default class View extends Component {
   }
 
   afterGetUser = () => {
+    this.checkUserOn()
     this.getRecs()
+  }
+
+  checkUserOn = () => {
+    const {
+      on,
+      turnOffDesc = ''
+    } = this.state.user || {}
+    if (!on) {
+      const re = turnOffDesc === 'self'
+        ? 'You have turned auto reply off'
+        : 'Token renew failed'
+      notification.info({
+        message: 'Auto reply disabled',
+        duration: 55,
+        description: (
+          <div>
+            <p>{re}</p>
+            <p>
+              <Button
+                type='primary'
+                onClick={() => this.handleChangeOn(true)}
+              >
+                Enable auto reply
+              </Button>
+            </p>
+          </div>
+        )
+      })
+    }
   }
 
   onSubmit = async (res) => {
@@ -396,6 +427,7 @@ export default class View extends Component {
   handleChangeOn = on => {
     if (!on) {
       this.updateUser({
+        turnOffDesc: 'self',
         on
       })
     } else {

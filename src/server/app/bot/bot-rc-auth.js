@@ -47,15 +47,7 @@ async function init (code) {
     Object.assign(user, up)
     await RcUser.update(up, q)
   }
-  const r = await user.ensureWebHook()
-    .catch(e => {
-      console.log('ensureWebHook error', e)
-    })
-  if (!r) {
-    await RcUser.update({
-      on: 0
-    }, q)
-  }
+  await user.ensureWebHook()
   return rcId
 }
 

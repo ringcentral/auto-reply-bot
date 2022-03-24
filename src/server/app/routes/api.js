@@ -9,6 +9,7 @@ import webhook from '../handlers/webhook'
 import _ from 'lodash'
 
 const propsCanUpdate = [
+  'turnOffDesc',
   'on',
   'shouldUseSignature'
 ]
