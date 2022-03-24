@@ -1,6 +1,6 @@
 {
   "name": "poll-bot",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Poll bot for RingCentral App",
   "main": "index.js",
   "keywords": [
@@ -28,7 +28,7 @@
     "@babel/runtime": "^7.17.2",
     "@rc-ex/authorize-uri": "^0.8.5",
     "@rc-ex/core": "^0.12.4",
-    "@rc-ex/rate-limit": "^0.8.4",
+    "@rc-ex/retry": "^0.8.2",
     "dayjs": "^1.10.7",
     "express": "^4.17.1",
     "express-jwt": "^6.1.0",

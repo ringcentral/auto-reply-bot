@@ -1,5 +1,7 @@
 import { resolve } from 'path'
 import RingCentral from '@rc-ex/core'
+import RetryExtension from '@rc-ex/retry'
+// import RateLimitExtension from '@rc-ex/rate-limit'
 import AuthorizeUriExtension from '@rc-ex/authorize-uri'
 import crypto from 'crypto'
 
@@ -28,8 +30,30 @@ export const createRc = async () => {
     clientId: RINGCENTRAL_CLIENT_ID,
     clientSecret: RINGCENTRAL_CLIENT_SECRET
   })
+  const retryOptions = {
+    shouldRetry: (restException, retriesAttempted) => {
+      const {
+        status
+      } = restException.response
+      return (
+        retriesAttempted < 5 &&
+        (
+          [429, 503].includes(status) ||
+          status > 503
+        )
+      )
+    },
+    retryInterval: (restException, retriesAttempted) => {
+      const f = restException.response.status === 429
+        ? 60
+        : 1
+      return f * 1000 * Math.pow(2, retriesAttempted)
+    }
+  }
+  const retryExtension = new RetryExtension(retryOptions)
   const authorizeUriExtension = new AuthorizeUriExtension()
   await rc.installExtension(authorizeUriExtension)
+  await rc.installExtension(retryExtension)
   rc.redirectUrl = RINGCENTRAL_CHATBOT_SERVER + '/rc/oauth'
   rc.loginUrl = ({ state }) => {
     return authorizeUriExtension.buildUri({

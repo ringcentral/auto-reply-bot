@@ -133,9 +133,10 @@ User.prototype.getSubscriptions = async function () {
 User.prototype.tryRefresh = async function () {
   const now = Date.now()
   const { lastRefreshTime } = this
-  if (now - lastRefreshTime > tokenExpireTime) {
-    await this.refresh()
+  if (now - lastRefreshTime < tokenExpireTime) {
+    return false
   }
+  await this.refresh()
 }
 
 User.prototype.refresh = async function () {
