@@ -102,6 +102,9 @@ User.prototype.trySetupWebHook = async function () {
   let count = 0
   let done = false
   while (count < 5 && !done) {
+    if (count > 0) {
+      console.log('retry setup webhook')
+    }
     done = await this.setupWebHook()
     count = count + 1
     await delay(1)
@@ -149,7 +152,7 @@ User.prototype.tryRefresh = async function () {
   if (now - lastRefreshTime < tokenExpireTime) {
     return false
   }
-  await this.refresh()
+  return this.refresh()
 }
 
 User.prototype.refresh = async function () {
