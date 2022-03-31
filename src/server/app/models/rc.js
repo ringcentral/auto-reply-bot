@@ -118,7 +118,7 @@ User.prototype.trySetupWebHook = async function () {
 User.prototype.setupWebHook = async function () {
   await this.tryRefresh()
   const rc = await this.rc()
-  await rc.post('/restapi/v1.0/subscription', {
+  return rc.post('/restapi/v1.0/subscription', {
     eventFilters: [
       '/restapi/v1.0/glip/posts',
       '/restapi/v1.0/glip/groups',
