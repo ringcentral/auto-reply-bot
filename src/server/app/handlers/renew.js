@@ -10,10 +10,9 @@ import delay from 'timeout-as-promise'
 // const deadline = 1000 * 60 * 60 * 24 * 90
 const limit = parseInt(process.env.RENEW_LIMIT, 10)
 
-const expireRc = 3600 * 1000 - 60 * 1000
+const expire = 3600 * 1000 - 60 * 1000
 
 export async function refreshRcUser (user) {
-  const expire = expireRc
   const now = Date.now()
   const update = +new Date(user.lastRefreshTime)
   // console.log('update time', update)
@@ -24,7 +23,7 @@ export async function refreshRcUser (user) {
     await user.refresh()
   }
   if (!user.on && user.turnOffDesc !== 'self') {
-    await this.ensureWebHook()
+    await user.ensureWebHook()
   }
   return user
 }

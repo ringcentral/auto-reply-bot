@@ -109,7 +109,6 @@ User.prototype.trySetupWebHook = async function () {
     count = count + 1
     await delay(1)
   }
-  console.log('done=', done)
   if (!done) {
     await this.turnOff()
   }
@@ -150,10 +149,10 @@ User.prototype.getSubscriptions = async function () {
 User.prototype.tryRefresh = async function () {
   const now = Date.now()
   const { lastRefreshTime } = this
-  console.log('now', now)
-  console.log('lastRefreshTime', lastRefreshTime)
-  console.log('diff', now - lastRefreshTime)
-  console.log('tokenExpireTime', tokenExpireTime)
+  // console.log('now', now)
+  // console.log('lastRefreshTime', lastRefreshTime)
+  // console.log('diff', now - lastRefreshTime)
+  // console.log('tokenExpireTime', tokenExpireTime)
   if (now - lastRefreshTime < tokenExpireTime) {
     return false
   }

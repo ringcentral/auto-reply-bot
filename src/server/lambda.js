@@ -19,5 +19,8 @@ export const maintain = async () => {
         password: process.env.RINGCENTRAL_CHATBOT_ADMIN_PASSWORD
       }
     }
-  )
+  ).then(d => d.data)
+    .catch(e => {
+      console.log(e)
+    })
 }

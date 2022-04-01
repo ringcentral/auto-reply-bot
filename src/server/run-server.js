@@ -12,6 +12,5 @@ const {
 app.listen(port, host, () => {
   console.log(`-> server running at: http://${host}:${port}${APP_HOME}`)
   console.log(`bot oauth uri: ${server}${botConfig.botRoute}/oauth`)
-  console.log(`card interactive message uri: ${server}${botConfig.cardRoute}`)
   initDb()
 })

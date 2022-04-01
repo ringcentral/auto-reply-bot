@@ -74,9 +74,6 @@ export default function List (props) {
       key: 'op',
       render: (text, item) => {
         const loading = loadingRecs[item.id] || false
-        console.log(
-          'loading', loading
-        )
         return (
           <Spin spinning={loading}>
             <EditFilled
