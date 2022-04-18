@@ -1,4 +1,5 @@
 import { Record } from '../models/record'
+import createSignature from '../common/build-signature'
 
 function dequote (str = '') {
   return str.slice(1, -1)
@@ -64,7 +65,7 @@ export const autoReply = async ({
         }
       })
       const sign = shouldUseSignature
-        ? `\n(Auto reply by ![:Person](${botId}))`
+        ? `\n${createSignature(botId)}`
         : ''
       const sig = isPrivateChat
         ? ''

@@ -20,6 +20,7 @@ import { createFromCmd, handleCmd } from './bot-db'
 import {
   sendPrivateMsg
 } from '../common/send-msg'
+import createSignature from '../common/build-signature'
 import { RcUser } from '../models/rc'
 
 const addCommands = [
@@ -136,6 +137,12 @@ async function parseCommand (text = '', userId) {
   }
 }
 
+function isAutoReplySignature (text, botId) {
+  return text.includes(
+    createSignature(botId)
+  )
+}
+
 export async function botJoin (bot, group) {
   const msg1 = buildWelcomeMessage(bot, group)
   await bot.sendAdaptiveCard(group.id, msg1)
@@ -162,7 +169,7 @@ export async function handleMessage (
     return false
   }
   const conf = await parseCommand(text, userId)
-  if (!conf) {
+  if (!conf || !isAutoReplySignature(message.text, bot.id)) {
     const msg = buildWelcomeMessage(bot, group)
     await bot.sendAdaptiveCard(group.id, msg)
     return false
