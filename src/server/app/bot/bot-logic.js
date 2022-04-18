@@ -138,6 +138,7 @@ async function parseCommand (text = '', userId) {
 }
 
 function isAutoReplySignature (text, botId) {
+  console.log(text, 'oo')
   return text.includes(
     createSignature(botId)
   )
@@ -169,7 +170,7 @@ export async function handleMessage (
     return false
   }
   const conf = await parseCommand(text, userId)
-  if (!conf || !isAutoReplySignature(message.text, bot.id)) {
+  if (!conf && !isAutoReplySignature(message.text, bot.id)) {
     const msg = buildWelcomeMessage(bot, group)
     await bot.sendAdaptiveCard(group.id, msg)
     return false
