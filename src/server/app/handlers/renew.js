@@ -25,9 +25,7 @@ export async function refreshRcUser (user) {
     console.log('refresh token for', user.id)
     await user.refresh()
   }
-  if (!user.on && user.turnOffDesc !== 'self') {
-    await user.ensureWebHook()
-  }
+  await user.ensureWebHook()
   return user
 }
 
