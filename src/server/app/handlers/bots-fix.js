@@ -46,7 +46,9 @@ export default async function renew (req, res) {
   let i = 1
   for (const bot of bots) {
     console.log(i, 'bot', bot.id)
-    await bot.ensureWebHook()
+    await bot.ensureWebHook().catch(err => {
+      console.log('ensureWebHook for bot id', bot.id, 'failed', err)
+    })
     i++
   }
   if (bots.lastKey) {
