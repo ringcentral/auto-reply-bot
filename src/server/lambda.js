@@ -10,8 +10,13 @@ import { maintain as maintainFunc } from './app/common/maintain'
 export const app = serverlessHTTP(app1)
 
 export const maintain = async () => {
-  console.log('send renew request')
-  await maintainFunc()
+  console.log('trigger maintain request')
+  await maintainFunc({
+    app: 'maintain'
+  })
+  await maintainFunc({
+    app: 'maintainBots'
+  })
 }
 
 export const trigger = async (event) => {

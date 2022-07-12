@@ -7,3 +7,11 @@ export function maintain (data = {
   const name = getName()
   return invoke(data, name)
 }
+
+export function maintainBots (data = {
+  db: 'bot',
+  app: 'maintain'
+}) {
+  const name = getName()
+  return invoke(data, name)
+}
